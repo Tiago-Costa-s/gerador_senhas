@@ -2,6 +2,15 @@
 const generatePasswordButton = document.querySelector("#generate-password");
 const generatedPasswordElement = document.querySelector("#generated-password");
 
+//Novas funcionalidades
+const openCloseGeneratorButton = document.querySelector("#open-generate-password");
+const generatePasswordContainer = document.querySelector("#generate-options");
+const lengthInput = document.querySelector("#length");
+const lettersInput = document.querySelector("#letters");
+const numbersInput = document.querySelector("#numbers");
+const symbolsInput = document.querySelector("#symbols");
+const copyPasswordButton = document.querySelector("#copy-password");
+
 //Funções
 //letras, Números e Símbolos
 
@@ -26,32 +35,49 @@ const getSymbol = () => {
     return symbols[Math.floor(Math.random() * symbols.length)];
 };
 
-
 const generatePassword = (getLetterLowerCase, getLetterUpperrCase, getNumber, getSymbol) => {
+    //senha vazia
     let password = "";
-    const passwordLength = 10;
 
-    const generators = [
-        getLetterLowerCase,
-        getLetterUpperrCase,
-        getNumber,
-        getSymbol
-    ];
+    //segunda versão
+    const passwordLength = +lengthInput.value;
 
-    for (i = 0; i < passwordLength; i = i + 4) {
+    //recebe um arry com as funções de senha
+    const generators = [];
+
+    if (lettersInput.checked) {
+        generators.push(getLetterLowerCase, getLetterUpperrCase);
+    }
+
+    if (numbersInput.checked) {
+        generators.push(getNumber);
+    }
+
+    if (symbolsInput.checked) {
+        generators.push(getSymbol);
+    }
+
+    console.log(generators.length)
+    if (generators.length === 0) {
+        return;
+    }
+
+    //loop vezes igual ao tamanho da senha
+    for (i = 0; i < passwordLength; i = i + generators.length) {
         generators.forEach(() => {
             const randomValue = generators[Math.floor(Math.random() * generators.length)]();
+            //vai recebendo cada caracter da senha
             password += randomValue;
         });
     }
 
+    //ajusta o bug da senha com 12carcters para 10 caracteres.
     password = password.slice(0, passwordLength);
 
-    console.log(password);
-
-    console.log(generators);
-
+    //exibe o elemento campo de senha
     generatedPasswordElement.style.display = "block";
+
+    //exbibe a senha
     generatedPasswordElement.querySelector("h4").innerText = password;
 };
 
@@ -59,3 +85,24 @@ const generatePassword = (getLetterLowerCase, getLetterUpperrCase, getNumber, ge
 generatePasswordButton.addEventListener("click", () => {
     generatePassword(getLetterLowerCase, getLetterUpperrCase, getNumber, getSymbol);
 });
+
+openCloseGeneratorButton.addEventListener("click", () => {
+    generatePasswordContainer.classList.toggle("hide");
+});
+
+
+copyPasswordButton.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    const password = generatedPasswordElement.querySelector("h4").innerText;
+
+    console.log(password);
+
+    navigator.clipboard.writeText(password).then(() => {
+        copyPasswordButton.innerText = "Senha copiada com sucesso!";
+
+        setTimeout(() => {
+            copyPasswordButton.innerText = "Copiar";
+        }, 1000);
+    });
+})
